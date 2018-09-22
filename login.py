@@ -1,42 +1,46 @@
-from bottle import route, run, request, template, redirect
+from bottle import route, request, template, redirect
 import sqlite3
+import hashlib
+from bottle import static_file
 
-@route('/hello')
-def hello():
-    return "Hello World!"
+@route('/static/<filename:path>')
+def server_static(filename):
+    return static_file(filename, root='/home/clemalex/Documents/Project/bottle_login/static')
 
 @route('/login')
 def login():
-    return '''
-        <form action="/login" method="post">
-            username: <input name="username" type="text" />
-            password: <input name="password" type="password" />
-            <input value="Login" type="submit" />
-        </form>
-           '''
-
+    return template('templates/login_form_template')
+    
 @route('/login', method='POST') 
 def do_login():
 	username = request.forms.get('username')
 	password = request.forms.get('password')
+	password_hash = computeMD5hash(password)
+	if check_id(username, password_hash):
+		return template('templates/hello_template', name=username)
+	else:
+		return template('templates/error_template', error="Incorrect Password")
+		
+def check_id(username, password):
 	conn = sqlite3.connect('mydb.db')
 	conn.text_factory = str
 	c = conn.cursor()
-	if check_id(c, username, "name"):
-		if check_id(c, password, "password"):
-			return template('templates/hello_template', name=username)
-		else:
-			return template('templates/error_template',error="Incorrect Password")
-	else:
-		return template('templates/error_template', error="Unknown Username")
-		
-
-def check_id(c, word, row):
-	c.execute("SELECT "+ row +" FROM users")
+	c.execute("SELECT name FROM users")
 	results = c.fetchall()
 	for u in results :
-		if ''.join(u) == word:
-			return True
-	return False
+		if ''.join(u) == username:
+			c.execute("SELECT password FROM users where name= ? ", (username,))
+			results = c.fetchall()
+			for u in results :
+				if ''.join(u) == password:
+					return True
+				else :
+					return False
+		else :
+			return False
 
-run(host='localhost', port=8080, debug=True, reloader=True)
+def computeMD5hash(my_string):
+    m = hashlib.md5()
+    m.update(my_string.encode('utf-8'))
+    return m.hexdigest()
+
