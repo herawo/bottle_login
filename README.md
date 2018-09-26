@@ -5,29 +5,32 @@ Simple bottle login page for basic applications
 
 ### Install pip
 
-``` python3 -m pip install --user --upgrade pip ```
+` python3 -m pip install --user --upgrade pip `
 
 ### Install and set virtual env
 
-```
+`
 python3 -m pip install --user virtualenv
 virtualenv develop
 source develop/bin/activate
-```
+`
 
 ### Install Bottle 
 
-```pip install -U bottle```
+`pip install bottle`
+
+### Install Macaron
+`pip install macaron`
 
 ### Clone the repository
 
-```git clone https://github.com/herawo/bottle_login```
+`git clone https://github.com/herawo/bottle_login`
 
 ## Launch
 
-```
+`
 cd bottle_login
 python login.py
-```
+`
 
 
