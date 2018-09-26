@@ -1,7 +1,10 @@
-from bottle import route, request, template, redirect
+from bottle import *
+from users import User
 import sqlite3
 import hashlib
-from bottle import static_file
+import macaron
+
+install(macaron.MacaronPlugin("users.db"))
 
 @route('/static/<filename:path>')
 def server_static(filename):
@@ -9,8 +12,21 @@ def server_static(filename):
 
 @route('/login')
 def login():
-    return template('templates/login_form_template')
-    
+	return template('templates/login_form_template')
+	
+@route('/register')
+def login():
+	return template('templates/register_form_template')
+   
+@route('/register', method='POST') 
+def do_login():
+	un = request.forms.get('username')
+	pw = request.forms.get('password')
+	h_pw = computeMD5hash(pw)
+	User.create(username=un, password=h_pw)
+	macaron.bake()
+	redirect("/login")
+ 
 @route('/login', method='POST') 
 def do_login():
 	username = request.forms.get('username')
@@ -22,22 +38,17 @@ def do_login():
 		return template('templates/error_template', error="Incorrect Password")
 		
 def check_id(username, password):
-	conn = sqlite3.connect('mydb.db')
-	conn.text_factory = str
-	c = conn.cursor()
-	c.execute("SELECT name FROM users")
-	results = c.fetchall()
-	for u in results :
-		if ''.join(u) == username:
-			c.execute("SELECT password FROM users where name= ? ", (username,))
-			results = c.fetchall()
-			for u in results :
-				if ''.join(u) == password:
-					return True
-				else :
-					return False
-		else :
+	try :
+		usr = User.get("username=?",[username])
+		if(usr):
+			if(usr.password == password):
+				return True
+			else :
+				return False
+		else:
 			return False
+	except :
+		return False
 
 def computeMD5hash(my_string):
     m = hashlib.md5()

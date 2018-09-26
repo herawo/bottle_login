@@ -6,6 +6,7 @@ import serving_static
 def hello():
     return "<h1>Welcome</h1>\
     <a href='/login'><p>Connect</p></a>\
+    <a href='/register'><p>Register</p></a>\
     "
 
 run(host='localhost', port=8081, debug=True, reloader=True)
